@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Guardian - Login</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial; }
+        body { background: #0a0c10; color: #e0e0e0; min-height: 100vh; }
+        
+        /* Login Styles */
+        .login-container {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            width: 400px;
+            text-align: center;
+        }
+        .login-box h1 { color: #2563eb; margin-bottom: 30px; }
+        .login-box input {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .error { color: #ef4444; margin-top: 15px; display: none; }
+        .loading { color: #2563eb; margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <h1>🛡️ Network Guardian</h1>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <div class="loading" id="loadingMsg">Checking...</div>
+            <div class="error" id="errorMsg">Invalid credentials</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        // ========== LOGIN ==========
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            document.getElementById('loadingMsg').style.display = 'block';
+            document.getElementById('errorMsg').style.display = 'none';
+            
+            try {
+                const res = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await res.json();
+                document.getElementById('loadingMsg').style.display = 'none';
+                
+                if (result.success) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('username', username);
+                    if (result.role) {
+                        localStorage.setItem('role', result.role);
+                    }
+                    window.location.href = 'dashboard.html';
+                } else {
+                    document.getElementById('errorMsg').style.display = 'block';
+                }
+            } catch(e) {
+                document.getElementById('loadingMsg').style.display = 'none';
+                document.getElementById('errorMsg').textContent = 'Backend not running!';
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        }
+
+        // ========== INIT ==========
+        window.onload = function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (isLoggedIn) {
+                window.location.href = 'dashboard.html';
+            }
+        };
+    </script>
+</body>
+  </html>
